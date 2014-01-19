@@ -9,25 +9,18 @@
 #include <SDL/SDL_mixer.h>
 #include <fileHandler.h>
 
-typedef struct adsr {
-	unsigned char atc[4];
-	unsigned char dec[4];
-	int sus[4];
-	unsigned char rel[4];
-} ADSR;
-
 Uint32 timerCallback(Uint32 intervall, void *parameter);
 
-float setAttack(int attack, float amp);
+float setAttack(float val, float amp, float curAmp);
 float setDecay();
 float setSustain();
-float setRelease(int release, float amp);
+float setRelease(float adsr, float amp);
 
-Uint8* generateSineChunk(float freq, int num, float amp, int atc, int sus);
-Uint8* generateSquareChunk(float freq, int num, float amp, int atc, int rel, int sus);
+Uint8* generateSineChunk(float freq, int num, float amp, float atc);
+Uint8* generateSquareChunk(float freq, int num, float amp);
 Uint8* generateTriangleChunk(float freq, int num, float amp);
 Uint8* generateSawChunk(float freq, int num, float amp);
-Uint8* generateNoiseChunk(float freq, int num, float amp, int atc);
+Uint8* generateNoiseChunk(float freq, int num, float amp);
 
 void sfx_init();
 void setupAudio(CHANNEL* channel);

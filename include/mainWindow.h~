@@ -15,24 +15,14 @@ typedef struct mainWindow {
 	SDL_Surface *authored;
 	SDL_Surface *blackened;
 	SDL_Color black;
-	SDL_Color green;
-	SDL_Color text_color;
 	SDL_Rect textDst2;
 	SDL_Rect textDstOld;
 	SDL_Rect mover;
 	SDL_Rect prevMover;
-	SDL_Surface *channel1Visible;
-	SDL_Surface *channel2Visible;
-	SDL_Surface *channel3Visible;
-	SDL_Surface *channel4Visible;
+	SDL_Surface *songVisible;
 	SDL_Surface *songInvisible;
-	SDL_Rect channel1Pos;
-	SDL_Rect channel2Pos;
-	SDL_Rect channel3Pos;
-	SDL_Rect channel4Pos;
+	SDL_Rect songPos;
 	SDL_Rect songPosOld;
-	SDL_Surface *file;
-	SDL_Surface *tempo;
 } MAINWINDOW;
 
 MAINWINDOW createWindow(MAINWINDOW window);

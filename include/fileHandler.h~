@@ -11,18 +11,17 @@ typedef struct channel_values {
 	float pan;
 	char tone[3];
 	float freq;
-	int atc;
+	float atc;
 	int dec;
-	int sus;
-	int rel;
-	char wholeChan[128];
+	float sus;
+	float rel;
 } CHANVAL;
 
 typedef struct channel {
 	unsigned char line;
-	int tempo;
+	unsigned char tempo;
 	char name[128];
-	char description[128];
+	char decription[128];
 	CHANVAL* chanval[4];
 	int lines;
 } CHANNEL;
