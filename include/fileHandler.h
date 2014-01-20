@@ -27,7 +27,7 @@ typedef struct channel {
 	int lines;
 } CHANNEL;
 
-CHANNEL* getChannelData(FILE* descFile, FILE* chanFile);
+CHANNEL* getChannelData(FILE* chanFile);
 float getNoteFrequency(char noteName[]);
 
 #define LINELEN 128;

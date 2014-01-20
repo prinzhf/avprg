@@ -7,6 +7,9 @@
 #include <SDL/SDL_ttf.h>
 #include <fileHandler.h>
 
+#define WIDTH (800)
+#define HEIGHT (600)
+
 typedef struct mainWindow {
 	TTF_Font *font;
 	TTF_Font *font2;
@@ -38,5 +41,6 @@ typedef struct mainWindow {
 MAINWINDOW createWindow(MAINWINDOW window);
 void moveDescription(MAINWINDOW* window);
 void setPhatText(MAINWINDOW* window, CHANNEL* chan);
+void clearBottom(MAINWINDOW* window);
 
 #endif

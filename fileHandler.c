@@ -23,11 +23,10 @@ float getNoteFrequency(char noteName[]) {
 }
 
 //PARSE .PHAT-FILE & .DESC-FILE, STORE IN CHANNEL-STRUCTURE
-CHANNEL* getChannelData(FILE* descFile, FILE* chanFile) {
+CHANNEL* getChannelData(FILE* chanFile) {
 	
 	int i, j;
-	
-	CHANNEL* chan = (CHANNEL*) descFile;
+	CHANNEL* chan = (CHANNEL*) chanFile;
 	if(chan != NULL)
 		chan = (CHANNEL*) malloc(sizeof(CHANNEL));
 	CHANVAL* chanval1 = (CHANVAL*) chanFile;
@@ -43,21 +42,14 @@ CHANNEL* getChannelData(FILE* descFile, FILE* chanFile) {
 	if(chanval4 != NULL)
 		chanval4 = (CHANVAL*) malloc(sizeof(CHANVAL)*1024);
 		
-	int descCount = 0, chanCount = 0, wCount = 0;
-	char descLine[128];
+	int chanCount = 0, wCount = 0;
 	char chanLine[128];
 	
 	int nvals, dvals, wvals;
 	
-	while(fgets(descLine, sizeof(descLine), descFile)) {
-		dvals = sscanf(descLine, "%s %s", chan->name, chan->description);
-		if(dvals == 0)
-			continue;
-		descCount++;
-	}
 	while(fgets(chanLine, sizeof(chanLine), chanFile)) {
 		nvals = sscanf(chanLine, "%d %f %f %s %d %d %d %d %d %f %f %s %d %d %d %d %d %f %f %s %d %d %d %d %d %f %f %s %d %d %d %d", &chanval1[chanCount].waveform, &chanval1[chanCount].amp, &chanval1[chanCount].pan, &chanval1[chanCount].tone[0], &chanval1[chanCount].atc, &chanval1[chanCount].dec, &chanval1[chanCount].sus, &chanval1[chanCount].rel, &chanval2[chanCount].waveform, &chanval2[chanCount].amp, &chanval2[chanCount].pan, &chanval2[chanCount].tone[0], &chanval2[chanCount].atc, &chanval2[chanCount].dec, &chanval2[chanCount].sus, &chanval2[chanCount].rel, &chanval3[chanCount].waveform, &chanval3[chanCount].amp, &chanval3[chanCount].pan, &chanval3[chanCount].tone[0], &chanval3[chanCount].atc, &chanval3[chanCount].dec, &chanval3[chanCount].sus, &chanval3[chanCount].rel, &chanval4[chanCount].waveform, &chanval4[chanCount].amp, &chanval4[chanCount].pan, &chanval4[chanCount].tone[0], &chanval4[chanCount].atc, &chanval4[chanCount].dec, &chanval4[chanCount].sus, &chanval4[chanCount].rel);
-		printf("waveform: %d, amp: %.1f, pan: %.1f, note: %s atc: %d, dec: %d\n", chanval2[chanCount].waveform, chanval2[chanCount].amp, chanval2[chanCount].pan, chanval2[chanCount].tone, (int)chanval2[chanCount].atc, (int)chanval2[chanCount].dec);
+		//printf("waveform: %d, amp: %.1f, pan: %.1f, note: %s atc: %d, dec: %d\n", chanval2[chanCount].waveform, chanval2[chanCount].amp, chanval2[chanCount].pan, chanval2[chanCount].tone, (int)chanval2[chanCount].atc, (int)chanval2[chanCount].dec);
 		if(nvals == 0)
 			continue;
 		chanCount++;
@@ -135,7 +127,6 @@ CHANNEL* getChannelData(FILE* descFile, FILE* chanFile) {
 	strcat(chan->chanval[0][0].wholeChan, " ");
 	strcat(chan->chanval[0][0].wholeChan, c7);*/
 	
-	//printf("lines in descFile: %d\n", descCount);
 	printf("lines in chanFile: %d\n", chanCount);
 	
 	chan->lines = chanCount;

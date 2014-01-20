@@ -1,6 +1,7 @@
 #include <audioProcessor.h>
 
 CHANNEL* chan;
+int upRunning = 0;
 int songpos = 0;
 Mix_Chunk* chunks[4];
 Sint16* streams[4][44100];
@@ -22,11 +23,6 @@ int sgn(double x) {
      return -1.0L; 
    else   
      return 0.0L; 
-}
-
-void myCallback(int channel);
-void myCallback(int channel) {
-	printf("channel ha finished\n");
 }
 
 //CALCULATE SINE SAMPLE
@@ -90,7 +86,7 @@ Uint8* generateNoiseChunk(float freq, int num, float amp, int atc) {
 	return (Uint8*) streams[num];
 }
 
-void sfx_init() {
+void sfx_init() {	
 	//initiate SDL_AUDIO
 	if(SDL_Init(SDL_INIT_AUDIO) < 0) {
 		printf("failed to initialize SDL Audio\n");
@@ -118,7 +114,6 @@ void sfx_init() {
 void setupAudio(CHANNEL* channel) {
 	sfx_init();
 	chan = channel;
-	
 	int i;
 	for(i=0;i<4;i++) {
 		chunks[i] = malloc(sizeof(Mix_Chunk));
@@ -161,6 +156,7 @@ Uint32 timerCallback(Uint32 intervall, void *parameter) {
 	int i;
 	if(songpos >= chan->lines)
 		songpos = 0;
+	printf("songpos: %d, chanLines: %d\n", songpos, chan->lines);
 	for(i = 0; i < 4; i++) {
 		freqs[i] = chan->chanval[i][songpos].freq;
 		amps[i] = chan->chanval[i][songpos].amp;
@@ -173,6 +169,17 @@ Uint32 timerCallback(Uint32 intervall, void *parameter) {
 	playChannels(freqs, amps, waveforms, chan);
 	songpos++;
 	return intervall;
+}
+
+void pauseChannels() {
+	Mix_Pause(-1);
+}
+void resumeChannels() {
+	Mix_Resume(-1);
+}
+void resetChannels() {
+	Mix_HaltChannel(-1);
+	songpos = 0;
 }
 
 //SET PANNING VIA Mix_SetPanning
