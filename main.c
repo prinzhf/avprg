@@ -11,48 +11,22 @@ void setFiles(char* phat, CHANNEL* chan, MAINWINDOW* window);
 int main(int argc, char* argv[]) {
 	
 	FILE* fp;
+	CHANNEL* chan;
+	MAINWINDOW* window;
+	SDL_Event event;
+	SDL_TimerID timer;
 	char filename[128];
 	char tempo[4];
-	int tempSec = 172;
+	int tempSec = 200;
 	int songRun = 0;
 	int i, j, k, running = 1;
-	SDL_Event event;
-	CHANNEL* chan;
-	
-	//SETUP MAINWINDOW
-	MAINWINDOW window = { 
-		.font = NULL, 
-		.font2 = NULL,
-		.font3 = NULL,
-		.surface = NULL,
-		.authored = NULL,
-		.blackened = NULL,
-		.black = {0, 0, 0},
-		.green = {0, 255, 0},
-		.text_color = {255, 255, 255},
-		.textDst2 = {0, 562.5, 0, 0},
-		.textDstOld = {0, 562.5, 0, 0},
-		.mover = {10, 30, 20, 40},
-		.prevMover = {10, 30, 20, 40},
-		.channel1Visible = NULL,
-		.channel2Visible = NULL,
-		.channel3Visible = NULL,
-		.channel4Visible = NULL,
-		.songInvisible = NULL,
-		.channel1Pos = {10, 300, 200, 550},
-		.channel2Pos = {210, 300, 400, 550},
-		.channel3Pos = {410, 300, 600, 550},
-		.channel4Pos = {610, 300, 800, 550},
-		.songPosOld = {50, 300, 750, 20},
-		.file = NULL,
-		.tempo = NULL
-	};
 	
 	//initiate SDL_VIDEO, SDL_TTF (fonts) & SDL_TIMER
 	if(SDL_Init(SDL_INIT_VIDEO) < 0){
 		printf("SDL init error\n");
 		return 1;
 	}
+	
 	if(TTF_Init() == -1) {
    		printf("TTF_Init: %s\n", TTF_GetError());
     	return 1;
@@ -61,10 +35,10 @@ int main(int argc, char* argv[]) {
 		printf("SDL timer init error\n");
 		return 1;
 	}
-	SDL_TimerID timer;
 	
+	//SETUP MAINWINDOW
 	window = createWindow(window);
-	window.textDst2.x = 0;
+	window->textDst2.x = 0;
 	
 	SDL_EnableKeyRepeat(0, 0);
 	
@@ -85,24 +59,30 @@ int main(int argc, char* argv[]) {
 								songRun = 0;
 								resetChannels();
 								SDL_RemoveTimer(timer);
-								getFileName(event, chan, &window, filename);
+								clearBottom(window);
+								clearCenter(window);
+								getFileName(event, chan, window, filename);
+								break;
 							case SDLK_t:
-								//tempSec = setTempo(event, &window);
+								songRun = 0;
+								resetChannels();
+								SDL_RemoveTimer(timer);
+								tempSec = setTempo(event, window);
 								break;
 							case SDLK_s:
 								if(filename != NULL && songRun != 1) {
 									songRun = 1;
+									clearBottom(window);
 									FILE* fp = fopen(filename, "r");
 									chan = getChannelData(fp);
 									fclose(fp);
-									setupAudio(chan);
+									setupAudio(chan, window);
 									timer = SDL_AddTimer(tempSec, timerCallback, NULL);
 								}
 								break;
 							case SDLK_p:
-								pauseChannels();
-							case SDLK_u:
-								resumeChannels();
+								songRun = pauseChannels(timer, songRun, tempSec);
+								break;
 							case SDLK_r:
 								resetChannels();
 							default:
@@ -110,12 +90,16 @@ int main(int argc, char* argv[]) {
 						}
 			}
 		}
-		moveDescription(&window);
+		moveDescription(window);
 		//moveSong(window);
 		
 		SDL_Delay(1);
 	}
-	
+	SDL_FreeSurface(window->surface);
+	SDL_FreeSurface(window->blackened);
+	SDL_FreeSurface(window->authored);
+	free(window);
+	free(chan);
 	SDL_CloseAudio();
 	SDL_Quit();
 	TTF_Quit();
@@ -147,8 +131,8 @@ void getFileName(SDL_Event event, CHANNEL* chan, MAINWINDOW* window, char* filen
 	int file_given = 0;
 	char c;
 	char phatPath[128] = "projects/";
-	char phat[128];
-	char phatClear[128];
+	char phat[128] = "";
+	char phatClear[128] = "";
 	char* extension = ".phat";
 	CHANNEL* channel;
 	SDL_EnableUNICODE(1);
@@ -191,7 +175,9 @@ int setTempo(SDL_Event event, MAINWINDOW* window) {
 	int tempo_given = 0;
 	int tempo = 0;
 	char ts[4];
+	char tempoText[16] = "Set Tempo: ";
 	SDL_EnableUNICODE(1);
+	displayInput(tempoText, window);
 	while(tempo_given == 0) {
 		while(SDL_PollEvent(&event)) {
 			switch(event.type) {
@@ -201,12 +187,14 @@ int setTempo(SDL_Event event, MAINWINDOW* window) {
 				case SDL_KEYDOWN:
 					case SDL_KEYUP:
 						if(event.key.keysym.sym ==SDLK_RETURN) {
+							tempo_given = 1;
 							break;
 						} else if(event.key.keysym.sym == SDLK_ESCAPE){
 							tempo_given = 1;
 							break;
 						} else {
 							c = event.key.keysym.unicode;
+							displayInput(ts, window);
 							strcat(ts, &c);
 							break;
 						}
@@ -217,5 +205,6 @@ int setTempo(SDL_Event event, MAINWINDOW* window) {
 	SDL_EnableUNICODE(SDL_DISABLE);
 	tempo = atoi(ts);
 	printf("Tempo: %d\n", tempo);
+	clearBottom(window);
 	return tempo;
 }

@@ -1,6 +1,7 @@
 #include <audioProcessor.h>
 
 CHANNEL* chan;
+MAINWINDOW* window;
 int upRunning = 0;
 int songpos = 0;
 Mix_Chunk* chunks[4];
@@ -26,10 +27,12 @@ int sgn(double x) {
 }
 
 //CALCULATE SINE SAMPLE
-Uint8* generateSineChunk(float freq, int num, float amp, int atc, int sus) {
+Uint8* generateSineChunk(float freq, int num, float amp, int atc, int rel, int sus, int dec) {
 	int i;
 	double generated;
+	float finalAmp = amp;
 	for(i = 0; i < 44100; i++) {
+		amp = handleADSR(i, num, amp, finalAmp, atc, decs[num], sus, rels[num]);
 		generated = (32767*amp)*sin(TWO_PI*freq*i/44100);
 		((Sint16*) streams[num])[i] = ((Sint16) generated);
 	}
@@ -37,12 +40,12 @@ Uint8* generateSineChunk(float freq, int num, float amp, int atc, int sus) {
 }
 
 //CALCULATE SQUARE SAMPLE
-Uint8* generateSquareChunk(float freq, int num, float amp, int atc, int rel, int sus) {
+Uint8* generateSquareChunk(float freq, int num, float amp, int atc, int rel, int sus, int dec) {
 	int i;
 	double generated;
+	float finalAmp = amp;
 	for(i = 0; i < (44100); i++) {
-		if(amp != 0.0)
-			amp = setAttack(atc, amp);
+		amp = handleADSR(i, num, amp, finalAmp, atc, dec, sus, rel);
 		generated = (32767*amp)*sgn(sin(TWO_PI*freq*i/44100));
 		((Sint16*) streams[num])[i] = generated;
 	}
@@ -50,10 +53,12 @@ Uint8* generateSquareChunk(float freq, int num, float amp, int atc, int rel, int
 }
 
 //CALCULATE TRIANGLE SAMPLE
-Uint8* generateTriangleChunk(float freq, int num, float amp) {
+Uint8* generateTriangleChunk(float freq, int num, float amp, int atc, int rel, int sus, int dec) {
 	int i;
 	double generated;
+	float finalAmp = amp;
 	for(i = 0; i < 44100; i++) {
+		amp = handleADSR(i, num, amp, finalAmp, atc, dec, sus, rel);
 		generated = (32767*amp)*sin(TWO_PI*freq*i/44100);
 		if(generated >= 0)
 			((Sint16*) streams[num])[i] = ((Sint16) generated);
@@ -64,22 +69,25 @@ Uint8* generateTriangleChunk(float freq, int num, float amp) {
 }
 
 //CALCULATE SAW SAMPLE
-Uint8* generateSawChunk(float freq, int num, float amp) {
+Uint8* generateSawChunk(float freq, int num, float amp, int atc, int rel, int sus, int dec) {
 	int i;//is
 	double generated;
+	float finalAmp = amp;
 	for(i = 0; i < 44100; i++) {
-		generated = (32767*amp)*sgn(sin(TWO_PI*freq*i/44100));
+		amp = handleADSR(i, num, amp, finalAmp, atc, dec, sus, rel);
+		generated = (32767*amp)*sin(TWO_PI*freq*i/44100);
 		((Sint16*) streams[num])[i] = generated;
 	}
 	return (Uint8*) streams[num];
 }
-
+// o-datei test
 //CALCULATE NOISE SAMPLE
-Uint8* generateNoiseChunk(float freq, int num, float amp, int atc) {
+Uint8* generateNoiseChunk(float freq, int num, float amp, int atc, int rel, int sus, int dec) {
 	int i;
 	float randval;
+	float finalAmp = amp;
 	for(i = 0; i < 44100; i++) {
-		amp = setAttack(atc, amp);
+		amp = handleADSR(i, num, amp, finalAmp, atc, dec, sus, rel);
 		randval = rand() % 32;
 		((Sint16*) streams[num])[i] = ((Sint16) ((amp * 32767)*sin(TWO_PI*(randval*freq)*i/44100)));
 	}
@@ -111,9 +119,11 @@ void sfx_init() {
 }
 
 //INITIATE AUDIO, ASSIGN CHANNEL-STRUCTURE, PREPARE MIX_CHUNKS
-void setupAudio(CHANNEL* channel) {
+void setupAudio(CHANNEL* channel, MAINWINDOW* window) {
 	sfx_init();
 	chan = channel;
+	window = window;
+	//window = (MAINWINDOW*) malloc(sizeof(MAINWINDOW));
 	int i;
 	for(i=0;i<4;i++) {
 		chunks[i] = malloc(sizeof(Mix_Chunk));
@@ -130,12 +140,12 @@ void playChannels(float* freqs, float* amps, int* waveforms, CHANNEL* chan) {
 	for(i = 0; i < 4; i++){
 		if(freqs[i] != -1.0) {
 			switch(waveforms[i]) {
-				case 1: chunks[i]->abuf = generateSineChunk(freqs[i], i, amps[i], atcs[i], suss[i]); break;
-				case 2: chunks[i]->abuf = generateSquareChunk(freqs[i], i, amps[i], atcs[i], rels[i], suss[i]); break;
-				case 3: chunks[i]->abuf = generateTriangleChunk(freqs[i], i, amps[i]); break;
-				case 4: chunks[i]->abuf = generateSawChunk(freqs[i], i, amps[i]); break;
-				case 5: chunks[i]->abuf = generateNoiseChunk(freqs[i], i, amps[i], atcs[i]); break;
-				default: chunks[i]->abuf = generateSquareChunk(freqs[i], i, amps[i], atcs[i], rels[i], suss[i]); break;
+				case 1: chunks[i]->abuf = generateSineChunk(freqs[i], i, amps[i], atcs[i], rels[i], suss[i], decs[i]); break;
+				case 2: chunks[i]->abuf = generateSquareChunk(freqs[i], i, amps[i], atcs[i], rels[i], suss[i], decs[i]); break;
+				case 3: chunks[i]->abuf = generateTriangleChunk(freqs[i], i, amps[i], atcs[i], rels[i], suss[i], decs[i]); break;
+				case 4: chunks[i]->abuf = generateSawChunk(freqs[i], i, amps[i], atcs[i], rels[i], suss[i], decs[i]); break;
+				case 5: chunks[i]->abuf = generateNoiseChunk(freqs[i], i, amps[i], atcs[i], rels[i], suss[i], decs[i]); break;
+				default: chunks[i]->abuf = generateSquareChunk(freqs[i], i, amps[i], atcs[i], rels[i], suss[i], decs[i]); break;
 			}
 			if(suss[i] != 1)
 				chunks[i]->alen = (4096*suss[i]);
@@ -144,10 +154,7 @@ void playChannels(float* freqs, float* amps, int* waveforms, CHANNEL* chan) {
 			Mix_PlayChannel(channels[i], chunks[i], 0);
 		} else {
 			Mix_ExpireChannel(channels[i], -1);
-			//Mix_PlayChannel(channels[i], chunks[i], 1);
 		}
-		//Mix_ExpireChannel(channels[i], 1000);
-		//}
 	}
 }
 
@@ -156,7 +163,6 @@ Uint32 timerCallback(Uint32 intervall, void *parameter) {
 	int i;
 	if(songpos >= chan->lines)
 		songpos = 0;
-	printf("songpos: %d, chanLines: %d\n", songpos, chan->lines);
 	for(i = 0; i < 4; i++) {
 		freqs[i] = chan->chanval[i][songpos].freq;
 		amps[i] = chan->chanval[i][songpos].amp;
@@ -165,17 +171,25 @@ Uint32 timerCallback(Uint32 intervall, void *parameter) {
 		atcs[i] = chan->chanval[i][songpos].atc;
 		suss[i] = chan->chanval[i][songpos].sus;
 		rels[i] = chan->chanval[i][songpos].rel;
+		decs[i] = chan->chanval[i][songpos].dec;
 	}
 	playChannels(freqs, amps, waveforms, chan);
 	songpos++;
+	moveSong(window, chan, songpos);
 	return intervall;
 }
 
-void pauseChannels() {
-	Mix_Pause(-1);
-}
-void resumeChannels() {
-	Mix_Resume(-1);
+int pauseChannels(SDL_TimerID timer, int songRun, int tempSec) {
+	if(songRun = 0) {
+		SDL_AddTimer(tempSec, timerCallback, NULL);
+		Mix_Resume(-1);
+		songRun = 1;
+	} else {
+		SDL_RemoveTimer(timer);
+		Mix_Pause(-1);
+		songRun = 0;
+	}
+	return songRun;
 }
 void resetChannels() {
 	Mix_HaltChannel(-1);
@@ -184,7 +198,7 @@ void resetChannels() {
 
 //SET PANNING VIA Mix_SetPanning
 void setPan(float* pans) {
-	/*int i;
+	int i;
 	for(i = 0; i < 4; i++) {
 		if(pans[i] < 0.0 && pans[i] >= -1.0) {
 			if(!Mix_SetPanning(channels[i], (int)(255*(pans[i]*(-1))), (int)(255*(1-(pans[i]*(-1)))))) {
@@ -199,28 +213,24 @@ void setPan(float* pans) {
   		 		printf("Mix_SetPanning: %s\n", Mix_GetError());
   		 	}
 	    }
-	}*/
+	}
 }
 
 //HANDLE ATTACK, !(DECAY), !(SUSTAIN) & RELEASE
-float setAttack(int attack, float amp) {
-	float atc = attack/10000.0;
-	if((amp+atc) <= 1.0)
-		amp += atc;
-	else
-		amp = 0.9;
-	return amp;
-}
-float setDecay() {
-	
-}
-float setSustain() {
-	
-}
-float setRelease(int release, float amp) {
-	if((amp - release) <= 0.0f)
-		amp = 0.0f;
-	else
-		amp -= release;
-	return amp;
+float handleADSR(int i, int num, float amp, float finalAmp, int atc, int dec, int sus, int rel) {
+	if(atc == 1 && rel == 1)
+		return finalAmp;
+	if(i == 0)
+		amp = 0.001f;
+		
+	float adsr = 0.0f;
+	if(atc != 1 && atc != 0 && amp <= finalAmp && i <= (int)(chunks[num]->alen/atc)) {
+		amp += (float)((chunks[num]->alen/atc)*0.00000001);
+		return amp;
+	} else if(rel != 1 && rel != 0 && i > (chunks[num]->alen/rel)) {
+		amp -= (float)((chunks[num]->alen/rel)*0.00000001);
+		return amp;
+	} else {
+			return finalAmp;
+	}
 }

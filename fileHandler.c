@@ -88,49 +88,30 @@ CHANNEL* getChannelData(FILE* chanFile) {
 			snprintf(sus, sizeof(int), "%d", chan->chanval[j][x].sus);
 			snprintf(rel, sizeof(int), "%d", chan->chanval[j][x].rel);
 			strcat(chan->chanval[j][x].wholeChan, waveform);
-			strcat(chan->chanval[j][x].wholeChan, " ");
+			strcat(chan->chanval[j][x].wholeChan, "  ");
 			strcat(chan->chanval[j][x].wholeChan, amp);
-			strcat(chan->chanval[j][x].wholeChan, " ");
+			strcat(chan->chanval[j][x].wholeChan, "  ");
 			strcat(chan->chanval[j][x].wholeChan, pan);
-			strcat(chan->chanval[j][x].wholeChan, " ");
+			strcat(chan->chanval[j][x].wholeChan, "  ");
 			strcat(chan->chanval[j][x].wholeChan, tone);
-			strcat(chan->chanval[j][x].wholeChan, " ");
+			strcat(chan->chanval[j][x].wholeChan, "  ");
 			strcat(chan->chanval[j][x].wholeChan, atc);
-			strcat(chan->chanval[j][x].wholeChan, " ");
+			strcat(chan->chanval[j][x].wholeChan, "  ");
 			strcat(chan->chanval[j][x].wholeChan, dec);
-			strcat(chan->chanval[j][x].wholeChan, " ");
+			strcat(chan->chanval[j][x].wholeChan, "  ");
 			strcat(chan->chanval[j][x].wholeChan, sus);
-			strcat(chan->chanval[j][x].wholeChan, " ");
+			strcat(chan->chanval[j][x].wholeChan, "  ");
 			strcat(chan->chanval[j][x].wholeChan, rel);
 		}
 	}
 	
-	/*char c1[4], c2[4], c3[4], c4[4], c5[4], c6[4], c7[4]; 
-	snprintf(c1, sizeof(chan->chanval[0][0].amp), "%f", chan->chanval[0][0].amp);
-	snprintf(c2, sizeof(chan->chanval[0][0].pan), "%f", chan->chanval[0][0].pan);
-	snprintf(c3, sizeof(chan->chanval[0][0].tone), "%s", chan->chanval[0][0].tone);
-	snprintf(c4, sizeof(chan->chanval[0][0].atc), "%f", chan->chanval[0][0].atc);
-	snprintf(c5, sizeof(chan->chanval[0][0].dec), "%d", chan->chanval[0][0].dec);
-	snprintf(c6, sizeof(chan->chanval[0][0].sus), "%f", chan->chanval[0][0].sus);
-	snprintf(c7, sizeof(chan->chanval[0][0].rel), "%f", chan->chanval[0][0].rel);
-	strcat(chan->chanval[0][0].wholeChan, c1);
-	strcat(chan->chanval[0][0].wholeChan, " ");
-	strcat(chan->chanval[0][0].wholeChan, c2);
-	strcat(chan->chanval[0][0].wholeChan, " ");
-	strcat(chan->chanval[0][0].wholeChan, c3);
-	strcat(chan->chanval[0][0].wholeChan, " ");
-	strcat(chan->chanval[0][0].wholeChan, c4);
-	strcat(chan->chanval[0][0].wholeChan, " ");
-	strcat(chan->chanval[0][0].wholeChan, c5);
-	strcat(chan->chanval[0][0].wholeChan, " ");
-	strcat(chan->chanval[0][0].wholeChan, c6);
-	strcat(chan->chanval[0][0].wholeChan, " ");
-	strcat(chan->chanval[0][0].wholeChan, c7);*/
-	
 	printf("lines in chanFile: %d\n", chanCount);
-	
+	/*free(chanval1);
+	free(chanval2);
+	free(chanval3);
+	free(chanval4);
+	*/
 	chan->lines = chanCount;
 	
 	return chan;
 }
-;
